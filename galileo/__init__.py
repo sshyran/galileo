@@ -9,10 +9,14 @@ from flask.ext import restful
 class Route(object):
     method_order = ['GET', 'POST', 'PUT', 'DELETE']
     def __init__(self, path, resource, methods, arguments):
-        self.path = path
+        self.paths = [ path ]
         self.resource = resource
         self.methods = [ method for method in self.method_order if method in methods]
         self.arguments = arguments
+
+    def add_path(self, path):
+        if path not in self.paths:
+            self.paths.append(path)
 
 def _parse_argument(arg):
     arg = arg.replace("add_argument",'', 1)
@@ -74,6 +78,8 @@ class Galileo(object):
                 if not is_seen:
                     seen[view.view_class.__name__] = Route(
                         route.rule, view.view_class, view.methods, args)
+                else:
+                    is_seen.add_path(route.rule)
 
         keys = seen.keys()
         keys.sort()
