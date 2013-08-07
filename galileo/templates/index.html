@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Galileo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css">
+  </head>
+  <body data-spy="scroll" data-target="#navbar-list">
+    <body style="padding-top:70px">
+        <div class="navbar navbar-fixed-top">
+            <ul class="nav navbar-nav">
+                <li class="active dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown">Resources
+                    <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                    {% for route in routes %}
+                    <li><a href="#{{ route.resource.__name__ }}">{{ route.resource.__name__ }}</a></li>
+                    {% endfor %}
+                </ul>
+            </ul>
+        </div>
+        <div class="container">
+            {% for route in routes %}
+                <div style="padding-top: 70px; margin-top: -70px;" 
+                    class="row" id="{{ route.resource.__name__ }}">
+                    <div class="col-12">
+                        <h4>{{ route.resource.__name__ }}
+                            <small>{{route.path}}</small>
+                        </h4>
+                    </div>
+                </div>
+                {% for method in route.methods %}
+                <div class="row">
+                    <div class="span12">
+                        <span class="label {{ label_colors[method] }}" >{{ method }}</span><br/>
+                        <table class="table table-condensed table-bordered">
+                            <th>Param</th>
+                            <th>Type</th>
+                            <th>Default</th>
+                            <th>Location</th>
+                            <th>Required</th>
+                            {% for arg in route.arguments[method] %}
+                            <tr class="{{ 'warning' if arg.required == 'True' else '' }}">
+                                <td>{{arg.name}}</td>
+                                <td>{{arg.type}}</td>
+                                <td>{{arg.default or 'None'}}</td>
+                                <td>{{arg.location or 'form'}}</td>
+                                <td>{{arg.required or 'False'}}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
+                <div style="padding:50px"></div>
+            {% endfor %}
+        
+        </div>
+	</body>
+
+    <!-- JavaScript plugins (requires jQuery) -->
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min.js"></script>
+  </body>
+</html>
+</html>
