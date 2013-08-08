@@ -14,9 +14,15 @@ class Route(object):
         self.methods = [ method for method in self.method_order if method in methods]
         self.arguments = arguments
 
+        self.docstring = inspect.getdoc(resource) or ''
+
     def add_path(self, path):
         if path not in self.paths:
             self.paths.append(path)
+
+    def method_docs(self, method):
+        func = getattr(self.resource, method.lower())
+        return inspect.getdoc(func) or ''
 
 def _parse_argument(arg):
     arg = arg.replace("add_argument",'', 1)

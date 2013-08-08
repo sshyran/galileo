@@ -26,16 +26,22 @@
                 <div style="padding-top: 70px; margin-top: -70px;" 
                     class="row" id="{{ route.resource.__name__ }}">
                     <div class="col-6">
-                        <h4>{{ route.resource.__name__ }}
-                            <br/>
-                            {% for path in route.paths %}
-                            <small>{{path}}</small><br/>
-                            {% endfor %}
-                        </h4>
+						<div class="row">
+							<h4>{{ route.resource.__name__ }}
+								<br/>
+								{% for path in route.paths %}
+								<small>{{path}}</small><br/>
+								{% endfor %}
+							</h4>
+						</div>
+						<div class="row">
+							{{ route.docstring }}
+						</div>
                     </div>
                     <div class="col-6">
                         {% for method in route.methods %}
                         <div class="row">
+							{{ route.method_docs(method) }}	
                             <div>
                                 <span class="label {{ label_colors[method] }}" >{{ method }}</span><br/>
                                 <table class="table table-condensed table-bordered">
