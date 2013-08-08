@@ -10,13 +10,25 @@
     <body style="padding-top:70px">
         <div class="navbar navbar-fixed-top">
             <ul class="nav navbar-nav">
-                <li class="active dropdown">
-                <a class="dropdown-toggle" data-toggle="dropdown">Resources
+                <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown">By Class
                     <b class="caret"></b>
                 </a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu" style="overflow: scroll;
+                    max-height:940px;">
                     {% for route in routes %}
-                    <li><a href="#{{ route.resource.__name__ }}">{{ route.resource.__name__ }}</a></li>
+                    <li style="border-bottom-style: solid; border-bottom:#D8D8D8 dotted 1px" ><a href="#{{ route.resource.__name__ }}">{{ route.resource.__name__ }}</a></li>
+                    {% endfor %}
+                </ul>
+                <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown">By Route
+                    <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu" style="overflow: scroll;
+                    max-height:940px;">
+                    {% for path, route in route_nav %}
+                    <li style="border-bottom-style: solid;
+                    border-bottom:#D8D8D8 dotted 1px"><a href="#{{ route.resource.__name__ }}">{{ path }}</a></li>
                     {% endfor %}
                 </ul>
             </ul>
@@ -25,7 +37,7 @@
             {% for route in routes %}
                 <div style="padding-top: 70px; margin-top: -70px;" 
                     class="row" id="{{ route.resource.__name__ }}">
-                    <div class="col-6">
+                    <div class="col-5">
 						<div class="row">
 							<h4>{{ route.resource.__name__ }}
 								<br/>
@@ -35,13 +47,23 @@
 							</h4>
 						</div>
 						<div class="row">
-							{{ route.docstring }}
+                            {% if route.docstring %}
+                            <code>
+                                {{ route.docstring }}
+                            </code>
+                            {% endif %}
+
+                            <pre>{{ route.get_fields() }}</pre>
 						</div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-6 col-offset-1">
                         {% for method in route.methods %}
                         <div class="row">
-							{{ route.method_docs(method) }}	
+                            {% if route.method_docs(method) %}
+                            <code>
+                                {{ route.method_docs(method) }}	
+                            </code>
+                            {% endif %}
                             <div>
                                 <span class="label {{ label_colors[method] }}" >{{ method }}</span><br/>
                                 <table class="table table-condensed table-bordered">
@@ -67,6 +89,7 @@
                     </div>
                 </div>
             <div style="padding:50px"></div>
+            <hr/>
             {% endfor %}
         
         </div>

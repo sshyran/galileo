@@ -5,14 +5,16 @@ import inspect
 import re
 from flask import Blueprint, render_template, abort
 from flask.ext import restful
+import importlib
 
 class Route(object):
     method_order = ['GET', 'POST', 'PUT', 'DELETE']
-    def __init__(self, path, resource, methods, arguments):
+    def __init__(self, path, resource, methods, arguments, fields):
         self.paths = [ path ]
         self.resource = resource
         self.methods = [ method for method in self.method_order if method in methods]
         self.arguments = arguments
+        self.fields = fields
 
         self.docstring = inspect.getdoc(resource) or ''
 
@@ -23,6 +25,21 @@ class Route(object):
     def method_docs(self, method):
         func = getattr(self.resource, method.lower())
         return inspect.getdoc(func) or ''
+
+    def get_fields(self):
+        fields = {}
+
+        for method, field in self.fields.items():
+            for name, field_type in field.items():
+                if hasattr(field_type, '__name__'):
+                    fields[name] = field_type.__name__
+                else:
+                    fields[name] = field_type.__class__.__name__
+
+
+        return json.dumps(fields, indent=4)
+
+
 
 def _parse_argument(arg):
     arg = arg.replace("add_argument",'', 1)
@@ -62,6 +79,16 @@ class Galileo(object):
 
         self.app.register_blueprint(self.blueprint, url_prefix=self.path)
 
+    def _find_arguments(self, source):
+        matches = re.findall('add_argument\(.*?\)', source, re.S)
+        matches = [ _parse_argument(m) for m in matches ]
+        return matches
+
+    def _find_fields(self, source):
+        matches = re.findall('marshal_with\((.*?)\)', source, re.S)
+        return matches
+
+
     def docs(self):
         routes = []
         seen = {}
@@ -70,20 +97,27 @@ class Galileo(object):
             if hasattr(view, 'view_class'):
                 src_str = inspect.getsource(view.view_class)
                 args = {}
+                fields = {}
+
                 for method in view.methods:
                     method_start = src_str.find(" def {}".format(method.lower()))
                     method_end = src_str.find(" def ", method_start+1)
 
-                    matches = re.findall('add_argument\(.*?\)',
-                                         src_str[method_start:method_end], re.S)
+                    args[method] = self._find_arguments(src_str[method_start:method_end])
 
-                    matches = [ _parse_argument(m) for m in matches ]
-                    args[method] = matches
+                    marshal_start = src_str.rfind("marshal", 0, method_start)
+                    field_names = self._find_fields(src_str[marshal_start:method_start])
+
+                    for field in field_names:
+
+                        mod = importlib.import_module(view.view_class.__module__)
+                        if hasattr(mod, field):
+                            fields[method] = getattr(mod, field)
 
                 is_seen = seen.get(view.view_class.__name__)
                 if not is_seen:
                     seen[view.view_class.__name__] = Route(
-                        route.rule, view.view_class, view.methods, args)
+                        route.rule, view.view_class, view.methods, args, fields)
                 else:
                     is_seen.add_path(route.rule)
 
@@ -92,6 +126,15 @@ class Galileo(object):
 
         routes = [ seen[k] for k in keys ]
 
+        route_nav = {}
+        for k,v in seen.items():
+            for path in v.paths:
+                route_nav[path] = v
 
-        return render_template('index.html', routes=routes,
+        keys = route_nav.keys()
+        keys.sort()
+
+        route_nav = [ (path, route_nav[path]) for path in keys ]
+
+        return render_template('index.html', routes=routes, route_nav=route_nav,
                                label_colors=label_colors)
