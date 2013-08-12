@@ -45,7 +45,7 @@ class Route(object):
         return json.dumps(fields, indent=4)
 
     def source_url(self):
-        return "{}/{}/blob/master/{}.py#L{}".format(self.src_base_url,
+        return "{}/{}/blob/master/{}#L{}".format(self.src_base_url,
                                                     self.service, self.filename,
                                                     self.line_no)
 
@@ -123,6 +123,10 @@ class Galileo(object):
 
                     mod = importlib.import_module(view.view_class.__module__)
                     filename = mod.__name__.replace(".", "/")
+                    if mod.__file__.find("__init__.py") != -1:
+                        filename = "{}/__init__.py".format(filename)
+                    else:
+                        filename = "{}.py".format(filename)
 
                     for field in field_names:
                         if hasattr(mod, field):
