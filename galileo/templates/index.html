@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css">
+	<link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+<link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
   </head>
   <body data-spy="scroll" data-target="#navbar-list">
     <body style="padding-top:70px">
@@ -39,7 +41,14 @@
                     class="row" id="{{ route.resource.__name__ }}">
                     <div class="col-5">
 						<div class="row">
-							<h4>{{ route.resource.__name__ }}
+							<h4>{{ route.resource.__name__ }} 
+								<a target="_blank" href="{{route.source_url()}}"
+									style="text-decoration: none">
+									<i class="icon-github" ></i></a> 
+								<a href="#{{route.resource.__name__}}"
+									style="text-decoration: none">
+									<i class="icon-link"></i>
+								</a> 
 								<br/>
 								{% for path in route.paths %}
 								<small>{{path}}</small><br/>

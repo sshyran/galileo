@@ -9,7 +9,8 @@ import importlib
 
 class Route(object):
     method_order = ['GET', 'POST', 'PUT', 'DELETE']
-    def __init__(self, path, resource, methods, arguments, fields):
+    def __init__(self, path, resource, methods, arguments, fields, service=None,
+                src_base_url=None, filename=None, line_no=None):
         self.paths = [ path ]
         self.resource = resource
         self.methods = [ method for method in self.method_order if method in methods]
@@ -17,6 +18,10 @@ class Route(object):
         self.fields = fields
 
         self.docstring = inspect.getdoc(resource) or ''
+        self.service = service
+        self.src_base_url = src_base_url
+        self.filename = filename
+        self.line_no = line_no
 
     def add_path(self, path):
         if path not in self.paths:
@@ -39,6 +44,10 @@ class Route(object):
 
         return json.dumps(fields, indent=4)
 
+    def source_url(self):
+        return "{}/{}/blob/master/{}.py#L{}".format(self.src_base_url,
+                                                    self.service, self.filename,
+                                                    self.line_no)
 
 
 def _parse_argument(arg):
@@ -67,10 +76,12 @@ label_colors = {
 }
 
 class Galileo(object):
-    def __init__(self, app=None, path=None, **options):
+    def __init__(self, app=None, path=None, service=None, src_base_url=None, **options):
 
         self.app = app
         self.path = path
+        self.service = service
+        self.src_base_url = src_base_url
 
         self.blueprint = Blueprint('galileo', __name__,
                                    template_folder='templates',
@@ -96,6 +107,8 @@ class Galileo(object):
             view = self.app.view_functions[route.endpoint]
             if hasattr(view, 'view_class'):
                 src_str = inspect.getsource(view.view_class)
+                lines, line_no = inspect.getsourcelines(view.view_class)
+
                 args = {}
                 fields = {}
 
@@ -108,16 +121,19 @@ class Galileo(object):
                     marshal_start = src_str.rfind("marshal", 0, method_start)
                     field_names = self._find_fields(src_str[marshal_start:method_start])
 
-                    for field in field_names:
+                    mod = importlib.import_module(view.view_class.__module__)
+                    filename = mod.__name__.replace(".", "/")
 
-                        mod = importlib.import_module(view.view_class.__module__)
+                    for field in field_names:
                         if hasattr(mod, field):
                             fields[method] = getattr(mod, field)
 
                 is_seen = seen.get(view.view_class.__name__)
                 if not is_seen:
                     seen[view.view_class.__name__] = Route(
-                        route.rule, view.view_class, view.methods, args, fields)
+                        route.rule, view.view_class, view.methods, args, fields,
+                        self.service, self.src_base_url, filename=filename,
+                        line_no=line_no)
                 else:
                     is_seen.add_path(route.rule)
 
