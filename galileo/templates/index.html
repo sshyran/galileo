@@ -57,11 +57,10 @@
 						</div>
 						<div class="row">
                             {% if route.docstring %}
-                            <code>
+                            <code class="col-12" style="white-space:normal">
                                 {{ route.docstring }}
                             </code>
                             {% endif %}
-
                             <pre>{{ route.get_fields() }}</pre>
 						</div>
                     </div>
@@ -69,7 +68,7 @@
                         {% for method in route.methods %}
                         <div class="row">
                             {% if route.method_docs(method) %}
-                            <code>
+                            <code class="col-12" style="white-space:normal">
                                 {{ route.method_docs(method) }}	
                             </code>
                             {% endif %}
