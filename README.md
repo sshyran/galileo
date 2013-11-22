@@ -19,7 +19,7 @@ from galileo import Galileo
 app = Flask(__name__)
 
 # wrap the flask app and give a url
-health = Galileo(app, "/docs")
+Galileo(app, "/docs")
 
 ```
 
