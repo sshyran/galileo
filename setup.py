@@ -11,9 +11,6 @@ setup(name='galileo',
       packages=find_packages(),
       zip_safe=False,
       include_package_data=True,
-      package_data={
-        'galileo': ["templates/*.html"]
-      },
       license='MIT',
       platforms='any',
       install_requires=[
