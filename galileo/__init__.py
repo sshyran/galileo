@@ -7,13 +7,16 @@ from flask import Blueprint, render_template, abort
 from flask.ext import restful
 import importlib
 
+
 class Route(object):
     method_order = ['GET', 'POST', 'PUT', 'DELETE']
+
     def __init__(self, path, resource, methods, arguments, fields, service=None,
-                src_base_url=None, filename=None, line_no=None):
-        self.paths = [ path ]
+                 src_base_url=None, filename=None, line_no=None):
+        self.paths = [path]
         self.resource = resource
-        self.methods = [ method for method in self.method_order if method in methods]
+        self.methods = [
+            method for method in self.method_order if method in methods]
         self.arguments = arguments
         self.fields = fields
 
@@ -41,17 +44,16 @@ class Route(object):
                 else:
                     fields[name] = field_type.__class__.__name__
 
-
         return json.dumps(fields, indent=4)
 
     def source_url(self):
         return "{}/{}/blob/master/{}#L{}".format(self.src_base_url,
-                                                    self.service, self.filename,
-                                                    self.line_no)
+                                                 self.service, self.filename,
+                                                 self.line_no)
 
 
 def _parse_argument(arg):
-    arg = arg.replace("add_argument",'', 1)
+    arg = arg.replace("add_argument", '', 1)
     arg = arg.replace("(", "(name=", 1)
     arg = arg.replace("(", '')
     arg = arg.replace(")", '')
@@ -62,7 +64,7 @@ def _parse_argument(arg):
     data = {}
 
     for kwarg in kwargs:
-        k,v = kwarg.split("=")
+        k, v = kwarg.split("=")
         data[k.strip()] = v.strip()
 
     return data
@@ -75,7 +77,9 @@ label_colors = {
     'DELETE': 'label-info',
 }
 
+
 class Galileo(object):
+
     def __init__(self, app=None, path=None, service=None, src_base_url=None, **options):
 
         self.app = app
@@ -92,13 +96,12 @@ class Galileo(object):
 
     def _find_arguments(self, source):
         matches = re.findall('add_argument\(.*?\)', source, re.S)
-        matches = [ _parse_argument(m) for m in matches ]
+        matches = [_parse_argument(m) for m in matches]
         return matches
 
     def _find_fields(self, source):
         matches = re.findall('marshal_with\((.*?)\)', source, re.S)
         return matches
-
 
     def docs(self):
         routes = []
@@ -113,13 +116,16 @@ class Galileo(object):
                 fields = {}
 
                 for method in view.methods:
-                    method_start = src_str.find(" def {}".format(method.lower()))
-                    method_end = src_str.find(" def ", method_start+1)
+                    method_start = src_str.find(
+                        " def {}".format(method.lower()))
+                    method_end = src_str.find(" def ", method_start + 1)
 
-                    args[method] = self._find_arguments(src_str[method_start:method_end])
+                    args[method] = self._find_arguments(
+                        src_str[method_start:method_end])
 
                     marshal_start = src_str.rfind("marshal", 0, method_start)
-                    field_names = self._find_fields(src_str[marshal_start:method_start])
+                    field_names = self._find_fields(
+                        src_str[marshal_start:method_start])
 
                     mod = importlib.import_module(view.view_class.__module__)
                     filename = mod.__name__.replace(".", "/")
@@ -144,17 +150,17 @@ class Galileo(object):
         keys = seen.keys()
         keys.sort()
 
-        routes = [ seen[k] for k in keys ]
+        routes = [seen[k] for k in keys]
 
         route_nav = {}
-        for k,v in seen.items():
+        for k, v in seen.items():
             for path in v.paths:
                 route_nav[path] = v
 
         keys = route_nav.keys()
         keys.sort()
 
-        route_nav = [ (path, route_nav[path]) for path in keys ]
+        route_nav = [(path, route_nav[path]) for path in keys]
 
         return render_template('index.html', routes=routes, route_nav=route_nav,
                                label_colors=label_colors)

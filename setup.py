@@ -15,4 +15,4 @@ setup(name='galileo',
       platforms='any',
       install_requires=[
       ],
-)
+      )
