@@ -147,7 +147,7 @@ class Galileo(object):
                 else:
                     is_seen.add_path(route.rule)
 
-        keys = seen.keys()
+        keys = list(seen.keys())
         keys.sort()
 
         routes = [seen[k] for k in keys]
@@ -157,7 +157,7 @@ class Galileo(object):
             for path in v.paths:
                 route_nav[path] = v
 
-        keys = route_nav.keys()
+        keys = list(route_nav.keys())
         keys.sort()
 
         route_nav = [(path, route_nav[path]) for path in keys]
