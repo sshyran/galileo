@@ -4,7 +4,6 @@ import parser
 import inspect
 import re
 from flask import Blueprint, render_template, abort
-from flask.ext import restful
 import importlib
 
 
